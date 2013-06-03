@@ -10,17 +10,25 @@ require.config({
 });
 
 require([
+    '/webida.js',
 	'knockout',
 	'config/global',
 	'viewmodels/todo',
 	'extends/handlers'
-], function (ko, g, TodoViewModel) {
+], function (webida, ko, g, TodoViewModel) {
 	'use strict';
 
-	// var app_view = new AppView();
-	// check local storage for todos
-	var todos = ko.utils.parseJson(window.localStorage.getItem(g.localStorageItem));
-
-	// bind a new instance of our view model to the page
-	ko.applyBindings(new TodoViewModel(todos || []));
+    var dataPath = webida.fs.getFsPathFromPathname(window.location.pathname) + '/data.json';
+    var approot = webida.fs.mount(window.location.href);
+    
+    approot.readFile(dataPath, 'utf8', function (err, txt) {
+        var todos;
+        if (err) {
+            todos = null;
+        } else {
+            todos = ko.utils.parseJson(txt);
+        }
+        
+        ko.applyBindings(new TodoViewModel(todos || []));
+    });
 });

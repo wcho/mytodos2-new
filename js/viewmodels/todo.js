@@ -1,10 +1,11 @@
 /*global define, window */
 
 define([
+    '/webida.js',
 	'knockout',
 	'config/global',
 	'models/Todo'
-], function (ko, g, Todo) {
+], function (webida, ko, g, Todo) {
 	'use strict';
 
 	// our main view model
@@ -87,12 +88,14 @@ define([
 			return ko.utils.unwrapObservable(count) === 1 ? 'item' : 'items';
 		};
 
+       	var dataPath = webida.fs.getFsPathFromPathname(window.location.pathname) + '/data.json';
+    	var approot = webida.fs.mount(window.location.href);
+
 		// internal computed observable that fires whenever anything changes in our todos
 		ko.computed(function () {
-			// store a clean copy to local storage, which also creates a dependency on the observableArray and all observables in each item
-			window.localStorage.setItem(g.localStorageItem, ko.toJSON(self.todos));
+            approot.writeFile(dataPath, null, ko.toJSON(self.todos), function () {});
 		}).extend({
-			throttle: 500
+			throttle: 200
 		}); // save at most twice per second
 	};
 
